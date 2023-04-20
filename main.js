@@ -1,6 +1,6 @@
 const keys = document.querySelectorAll('.key');
-const display_input = document.querySelector('.display .input');
-const display_output = document.querySelector('.display .output');
+const displayInput = document.querySelector('.display .input');
+const displayOutput = document.querySelector('.display .output');
 
 let input ='';
 
@@ -10,17 +10,17 @@ for (let key of keys) {
     key.addEventListener('click', ()=>{
         if (value == 'clear') {
             input = '';
-            display_input.innerHTML = '';
-            display_output.innerHTML = '';
+            displayInput.innerHTML = '';
+            displayOutput.innerHTML = '';
         }
         else if (value == 'backspace') {
             input = input.slice(0, -1);
-            display_input.innerHTML = cleanInput(input);
+            displayInput.innerHTML = cleanInput(input);
         }
         else if (value == '=') {
-            let result = eval(input);
+            let result = eval(prepareInput(input));
 
-            display_output.innerHTML = result;
+            displayOutput.innerHTML = cleanOutput(result);
         }
         else if (value == 'brackets') {
             if (
@@ -39,48 +39,85 @@ for (let key of keys) {
              ){
                 input += ')';
             }
-            display_input.innerHTML = cleanInput(input);
+            displayInput.innerHTML = cleanInput(input);
         } else {
-            input += value;
-            display_input.innerHTML = cleanInput(input);
+            if (validateInput(value)) {
+                input += value;
+                displayInput.innerHTML = cleanInput(input);
+            }
+            
         }
     })
 }
 
 function cleanInput(input) {
-    let input_array = input.split('');
-    let input_array_length = input_array.length;
+    let inputArray = input.split('');
+    let inputArrayLength = inputArray.length;
 
-    for (let i = 0; i < input_array_length; i++ ){
-        if(input_array[i] == '*') {
-            input_array[i] = `<span class='operator'>*</span>`;
-        }else if (input_array[i] == '/') {
-            input_array[i] = `<span class='operator'>/</span>`;
-        }else if (input_array[i] == '+') {
-            input_array[i] = `<span class='operator'>+</span>`;
-        }else if (input_array[i] == '-') {
-            input_array[i] = `<span class='operator'>-</span>`;
-        }else if (input_array[i] == '(') {
-            input_array[i] = `<span class='brackets'>(</span>`;
-        }else if (input_array[i] == ')') {
-            input_array[i] = `<span class='brackets'>)</span>`;
-        }else if (input_array[i] == '%') {
-            input_array[i] = `<span class='percent'>%</span>`;
+    for (let i = 0; i < inputArrayLength; i++ ){
+        if(inputArray[i] == '*') {
+            inputArray[i] = `<span class='operator'>*</span>`;
+        }else if (inputArray[i] == '/') {
+            inputArray[i] = `<span class='operator'>/</span>`;
+        }else if (inputArray[i] == '+') {
+            inputArray[i] = `<span class='operator'>+</span>`;
+        }else if (inputArray[i] == '-') {
+            inputArray[i] = `<span class='operator'>-</span>`;
+        }else if (inputArray[i] == '(') {
+            inputArray[i] = `<span class='brackets'>(</span>`;
+        }else if (inputArray[i] == ')') {
+            inputArray[i] = `<span class='brackets'>)</span>`;
+        }else if (inputArray[i] == '%') {
+            inputArray[i] = `<span class='percent'>%</span>`;
         }
     }
-    return input_array.join('');
+    return inputArray.join('');
 }
 
 function cleanOutput (output) {
-    let output_string = output.toString();
-    let decimal = output_string.split('.')[1];
-    output_string = output_string.split('.')[0];
+    let outputString = output.toString();
+    let decimal = outputString.split('.')[1];
+    outputString = outputString.split('.')[0];
 
-    let output_array = output_string.split('');
+    let outputArray = outputString.split('');
 
-    if (output_array.length > 3 ) {
-        for (let i=output_array.length -3; i > 0; i -= 3) {
-            
+    if (outputArray.length > 3 ) {
+        for (let i=outputArray.length -3; i > 0; i -= 3) {
+            outputArray.splice(i, 0, ',');
         }
     }
+    if (decimal) {
+        outputArray.push('.');
+        outputArray.push(decimal);
+    }
+    return outputArray.join('');
+}
+
+function validateInput (value){
+    let lastInput = input.slice(-1);
+    let operators = ["+", '-', '*', '/'];
+
+    if (input == '.' && lastInput == '.'){
+        return false;
+    }
+    
+    if (operators.includes(value)) {
+        if(operators.includes(lastInput)){
+            return false;
+        }else {
+            return true;
+        }
+    }
+    return true;
+}
+
+function prepareInput (input) {
+    let inputArray = input.split('');
+
+    for (let i = 0; i < inputArray.length; i ++) {
+        if ( inputArray[i] == '%') {
+            inputArray[i] = '/100';
+        }
+    }
+    return inputArray.join('');
 }
